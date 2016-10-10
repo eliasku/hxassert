@@ -1,98 +1,140 @@
 package hxassert;
 
+import haxe.macro.Expr;
+import haxe.macro.ExprTools;
+import haxe.PosInfos;
+
 @:final
 class Assert {
 
-	var _handlers:Array<AssertHandler> = [];
+	static var _handlers:Array<AssertHandler> = [];
 
-	public macro static function that(actual:haxe.macro.Expr, description:String = null):haxe.macro.Expr {
-#if hxassert_disable
-		return macro null;
-#else
-		return macro if(!($actual)) ${error(actual, "Assert failed", description)};
-#end
+	public static function add(handler:AssertHandler) {
+		_handlers.push(handler);
 	}
 
-	public macro static function notNull(actual:haxe.macro.Expr, description:String = null):haxe.macro.Expr {
-#if hxassert_disable
-		return macro null;
-#else
-		return macro if(($actual) == null) ${error(actual, "Expected not null", description)};
-#end
+	public static function remove(handler:AssertHandler) {
+		_handlers.remove(handler);
 	}
 
-	public macro static function isNull(actual:haxe.macro.Expr, description:String = null):haxe.macro.Expr {
+	public macro static function that(actual:Expr, message:String = null):Expr {
 #if hxassert_disable
 		return macro null;
 #else
-		var errorMessage = formatErrorMessage(actual, "Expected null but it's {0}", description);
+		var errorMessage = format(message != null ? message : "`{0}` condition shoud be true", [
+			ExprTools.toString(actual)
+		]);
+
 		return macro {
-			var __actualValue = $actual;
-			if(__actualValue != null) throw @:privateAccess Assert.format($v{errorMessage}, [__actualValue]);
+			if(null == ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
 		}
 #end
 	}
 
-	public macro static function isTrue(actual:haxe.macro.Expr, description:String = null):haxe.macro.Expr {
+	public macro static function notNull(actual:Expr, ?message:String):Expr {
 #if hxassert_disable
 		return macro null;
 #else
-		return macro if(($actual) != true) ${error(actual, "Expected true", description)};
-#end
-	}
+		var errorMessage = format(message != null ? message : "`{0}` shoud not be `null`", [
+			ExprTools.toString(actual)
+		]);
 
-	public macro static function isFalse(actual:haxe.macro.Expr, description:String = null):haxe.macro.Expr {
-#if hxassert_disable
-		return macro null;
-#else
-		return macro if(($actual) != false) ${error(actual, "Expected false", description)};
-#end
-	}
-
-	public macro static function equals(expected:haxe.macro.Expr, actual:haxe.macro.Expr, description:String = null):haxe.macro.Expr {
-#if hxassert_disable
-		return macro null;
-#else
-		var errorMessage = formatErrorMessage(actual, "Expected {0} but it's {1}", description);
 		return macro {
-			var __expectedValue = $expected;
-			var __actualValue = $actual;
-			if(__expectedValue != __actualValue) throw @:privateAccess Assert.format($v{errorMessage}, [__expectedValue, __actualValue]);
+			if(null == ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
 		}
 #end
 	}
 
-	public macro static function fail(reason:String = null):haxe.macro.Expr {
-#if (hxassert_disable || hxassert_noexept)
+	public macro static function isNull(actual:Expr, ?message:String):Expr {
+#if hxassert_disable
 		return macro null;
 #else
-		if(reason == null) {
-			reason = "Assert.fail";
-		}
+		var errorMessage = format(message != null ? message : "`{0}` shoud be `null`", [
+			ExprTools.toString(actual)
+		]);
+
 		return macro {
-			throw $v{reason};
+			if(null != ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
+		}
+#end
+	}
+
+	public macro static function isTrue(actual:Expr, ?message:String):Expr {
+#if hxassert_disable
+		return macro null;
+#else
+		var errorMessage = format(message != null ? message : "`{0}` shoud be `true`", [
+			ExprTools.toString(actual)
+		]);
+
+		return macro {
+			if(true != ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
+		}
+#end
+	}
+
+	public macro static function isFalse(actual:Expr, ?message:String):Expr {
+#if hxassert_disable
+		return macro null;
+#else
+		var errorMessage = format(message != null ? message : "`{0}` shoud be `false`", [
+			ExprTools.toString(actual)
+		]);
+
+		return macro {
+			if(false != ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
+		}
+#end
+	}
+
+	public macro static function equals(expected:Expr, actual:Expr, ?message:String):Expr {
+#if hxassert_disable
+		return macro null;
+#else
+		var errorMessage = format(message != null ? message : "`{1}` shoud be `{0}`", [
+			ExprTools.toString(actual),
+			ExprTools.toString(expected)
+		]);
+
+		return macro {
+			if(($expected) != ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
 		}
 #end
 	}
 
 #if macro
-	static function formatErrorMessage(expr:haxe.macro.Expr, message:String, customMessage:String):String {
-		var msg = message + '\nExpression: ${haxe.macro.ExprTools.toString(expr)}';
+	static function formatErrorMessage(expr:Expr, message:String, customMessage:String):String {
+		var msg = message + '\nExpression: ${ExprTools.toString(expr)}';
 		if(customMessage != null) {
 			msg += '\nDescription: $customMessage';
 		}
 		return msg;
 	}
 
-	static function error(expr:haxe.macro.Expr, message:String, customMessage:String):haxe.macro.Expr {
-		return macro throw $v{formatErrorMessage(expr, message, customMessage)};
+	static function error(expr:Expr, message:String, customMessage:String):Expr {
+		return macro @:pos(expr.pos) hxassert.Assert.fail($v{formatErrorMessage(expr, message, customMessage)});
 	}
 #end
 
+	public static function fail(?reason:String, ?infos:PosInfos) {
+#if !hxassert_disable
+		for(handler in _handlers) {
+			handler(reason, infos);
+		}
+	#if !hxassert_noexept
+		throw reason;
+	#end
+#end
+	}
+
 	static function format(message:String, arguments:Array<Dynamic>):String {
 		for(i in 0...arguments.length) {
-			message = message.replace('{$i}', Std.string(arguments[i]));
+			message = StringTools.replace(message, '{$i}', Std.string(arguments[i]));
 		}
 		return message;
+	}
+
+	public static function traceAssert(message:Dynamic, infos:PosInfos) {
+		haxe.Log.trace(message, infos);
 	}
 }
