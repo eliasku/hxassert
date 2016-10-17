@@ -1,6 +1,6 @@
 package hxassert;
 
-import haxe.PosInfos;
+@:final
 class AssertTest {
 
 	public function new() {}

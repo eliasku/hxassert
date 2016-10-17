@@ -26,7 +26,7 @@ class Assert {
 		]);
 
 		return macro {
-			if(null == ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
+			if(false == ($actual)) @:pos(actual.pos) hxassert.Assert.fail($v{errorMessage});
 		}
 #end
 	}
