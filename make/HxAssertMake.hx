@@ -25,7 +25,7 @@ class HxAssertMake extends hxmake.Module {
 				ext.config.contributors = ["eliasku"];
 				ext.config.url = "https://github.com/eliasku/hxassert";
 				ext.config.license = "MIT";
-				ext.config.version = "1.0.0";
+				ext.config.version = "0.1.0";
 				ext.config.releasenote = "Initial release";
 				ext.config.tags = ["utility", "assert", "contract", "debug"];
 
@@ -34,7 +34,7 @@ class HxAssertMake extends hxmake.Module {
 		);
 
 		var tt = new TestTask();
-		tt.targets = ["neko", "swf", "js", "node", "cpp", "java", "cs", "php"];
+		tt.targets = ["neko", "swf", "js", "node", "cpp", "java", "cs"];
 		tt.libraries = ["hxassert"];
 		task("test", tt);
 	}

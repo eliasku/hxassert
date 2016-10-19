@@ -1,0 +1,37 @@
+sudo: required
+dist: trusty
+
+language: haxe
+
+haxe:
+  - "3.2.1"
+  - development
+
+os:
+  - linux
+#  - osx
+
+branches:
+  only:
+    - master
+
+env:
+    matrix:
+    - TARGET=neko
+    - TARGET=cpp
+    - TARGET=cs
+    - TARGET=java
+    - TARGET=flash
+    - TARGET=js
+    - TARGET=node
+
+matrix:
+  allow_failures:
+    - haxe: development
+
+install:
+  - haxelib dev hxassert .
+  - haxelib git hxmake https://github.com/eliasku/hxmake.git
+
+script:
+  - haxelib run hxmake test --override-test-target=${TARGET}
