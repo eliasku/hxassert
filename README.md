@@ -17,34 +17,29 @@ Assert.that(x > 0, x, y, x + y);
 
 // (x == y) failed: -1 != 1
 // Validation: x + y = 0
-Assert.that(x == y, "({{_}}) failed: {{x}} != {{y}}\nValidation: x + y = {{x + y}}");
+Assert.that(x == y, "(${}) failed: $x != $y\nValidation: x + y = ${x + y}");
 
 // ASSERTION FAILED
 // Expression: x == y
 // x: -1
 // y: 1
-Assert.that(x == y, "ASSERTION FAILED\nExpression: {{_}}", x, y);
+Assert.that(x == y, "ASSERTION FAILED\nExpression: ${}", x, y);
 ```
 
-## Listen failures
+## Failure handling
 ```
-// just trace
-var disposeAssertTracer = Assert.on(haxe.Log.trace);
-
-// or whatever
+// whatever
 var disposeAssertLogging = Assert.on(
-	function(err:String, infos:PosInfos) {
+	function(err) {
+		haxe.Log.trace(err.toString(), err.position);
 		logToFile(err);
 		openErrorReporter(err);
+
+		// in case if you want to recover from throwing assert error immediately
+		err.recover();
 	}
 );
 
 // if need to remove listeners
-disposeAssertTracer();
 disposeAssertLogging();
 ```
-
-## Exceptions
-- Exceptions are String objects with reason of failure
-
-`-D hxassert_disable` - all asserts are disabled

@@ -50,7 +50,7 @@ class AssertTest {
 		try {
 			var a = zero;
 			var b = one;
-			hxassert.Assert.that(a == b, "{{_}} {{a}} {{b}} {{a - b}}");
+			hxassert.Assert.that(a == b, '${} $a $b ${a - b}');
 		}
 		catch (err:AssertionFailureError) {
 			utest.Assert.equals("a == b 0 1 -1", err);
@@ -72,7 +72,7 @@ class AssertTest {
 		try {
 			var a = zero;
 			var b = one;
-			hxassert.Assert.that(a == b, "How come? ({{_}}) => ({{a}} != {{b}})\nProve:", a, b);
+			hxassert.Assert.that(a == b, "How come? (${}) => ($a != $b)\nProve:", a, b);
 		}
 		catch (err:AssertionFailureError) {
 			utest.Assert.equals("How come? (a == b) => (0 != 1)\nProve:\na: 0\nb: 1", err.toString());
