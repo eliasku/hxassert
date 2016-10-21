@@ -5,71 +5,77 @@ import haxe.Log;
 class AssertTest {
 
 	var _disposeTrace:Void->Void;
+	var zero:Int;
+	var one:Int;
+	var two:Int;
 
 	public function new() {}
 
 	public function setup() {
-		_disposeTrace = hxassert.Assert.on(Log.trace);
+		_disposeTrace = hxassert.Assert.on(onAssert);
+		zero = Math.random() > 1 ? 1 : 0;
+		one = 1 - zero;
+		two = one + one;
 	}
 
 	public function teardown() {
 		_disposeTrace();
 	}
 
-	static function onAssert(msg, _) {
-		trace(msg);
+	static function onAssert(failure:AssertionFailureError) {
+		Log.trace(failure.toString() + failure.getCallStackText(), failure.position);
 	}
 
 	public function testSimple() {
 		try {
-			hxassert.Assert.that(1 == 0, "0 should be 1");
+			hxassert.Assert.that(one == zero, "0 should be 1");
 		}
-		catch (err:String) {
-			utest.Assert.equals("0 should be 1", err);
+		catch (err:AssertionFailureError) {
+			utest.Assert.equals("0 should be 1", err.toString());
 		}
 
 		try {
-			hxassert.Assert.that(1 == 0);
+			hxassert.Assert.that(one == zero);
 		}
-		catch (err:String) {
-			utest.Assert.equals("assert: 1 == 0", err);
+		catch (err:AssertionFailureError) {
+			utest.Assert.equals("Assertion failed: one == zero", err.toString());
 		}
 
-		hxassert.Assert.that(0 == 0, "0 should equals 0", Math.PI);
-		hxassert.Assert.that(1 == 1, Math.PI);
-		hxassert.Assert.that(2 == 2);
+		hxassert.Assert.that(zero == zero, "0 should equals 0", Math.PI);
+		hxassert.Assert.that(one == one, Math.PI);
+		hxassert.Assert.that(two == two);
 	}
 
 	public function testMessageFormat() {
 		try {
-			var a = 0;
-			var b = 1;
+			var a = zero;
+			var b = one;
 			hxassert.Assert.that(a == b, "{{_}} {{a}} {{b}} {{a - b}}");
 		}
-		catch (err:String) {
+		catch (err:AssertionFailureError) {
 			utest.Assert.equals("a == b 0 1 -1", err);
 		}
 	}
 
 	public function testMessageArguments() {
 		try {
-			var a = 0;
-			var b = 1;
+			var a = zero;
+			var b = one;
 			hxassert.Assert.that(a == b, a, b, a - b);
 		}
-		catch (err:String) {
-			utest.Assert.equals("assert: a == b\na: 0\nb: 1\na - b: -1", err);
+		catch (err:AssertionFailureError) {
+			utest.Assert.equals("Assertion failed: a == b\na: 0\nb: 1\na - b: -1", err.toString());
 		}
 	}
 
 	public function testMessageMixed() {
 		try {
-			var a = 0;
-			var b = 1;
+			var a = zero;
+			var b = one;
 			hxassert.Assert.that(a == b, "How come? ({{_}}) => ({{a}} != {{b}})\nProve:", a, b);
 		}
-		catch (err:String) {
-			utest.Assert.equals("How come? (a == b) => (0 != 1)\nProve:\na: 0\nb: 1", err);
+		catch (err:AssertionFailureError) {
+			utest.Assert.equals("How come? (a == b) => (0 != 1)\nProve:\na: 0\nb: 1", err.toString());
 		}
 	}
 
@@ -77,15 +83,15 @@ class AssertTest {
 		try {
 			hxassert.Assert.fail();
 		}
-		catch (err:String) {
-			utest.Assert.equals("FAIL", err);
+		catch (err:AssertionFailureError) {
+			utest.Assert.equals("Assert.fail", err.toString());
 		}
 
 		try {
 			hxassert.Assert.fail("Have a reason");
 		}
-		catch (err:String) {
-			utest.Assert.equals("Have a reason", err);
+		catch (err:AssertionFailureError) {
+			utest.Assert.equals("Have a reason", err.toString());
 		}
 	}
 
