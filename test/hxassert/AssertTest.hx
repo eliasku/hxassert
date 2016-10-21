@@ -54,7 +54,7 @@ class AssertTest {
 			hxassert.Assert.require(a == b, '${} $a $b ${a - b}');
 		}
 		catch (err:AssertionFailureError) {
-			utest.Assert.equals("a == b 0 1 -1", err);
+			utest.Assert.equals("a == b 0 1 -1", err.toString());
 		}
 	}
 
