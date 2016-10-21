@@ -103,7 +103,7 @@ class Assert {
 		for (handler in _handlers) {
 			handler(error);
 		}
-		#if !hxassert_mute
+		#if (debug || !hxassert_mute)
 		if (!error.recovered) {
 			throw error;
 		}
