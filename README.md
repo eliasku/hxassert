@@ -12,6 +12,8 @@ Lightweight library deliveries flexible base functionality on assertions.
 It could be used as standard assert library.
 It could provide base API for more high-level tools as "matching extensions", "contract-by-design", "assert-that notation".
 
+[API documentation](https://eliasku.github.io/hxassert/api-minimal/)
+
 ## Status
 API is not final yet. Development is in progress.
 Feel free to suggest better naming, API hacks, and compatibility features!
