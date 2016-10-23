@@ -110,6 +110,10 @@ class Assert {
 		#end
 	}
 
+	public static function throwAssertionFailureError(messages:Array<String>, ?position:PosInfos) {
+		throwError(new AssertionFailureError(messages, position));
+	}
+
 	static var _handlers = [];
 
 	#if macro
@@ -145,10 +149,8 @@ class Assert {
 
 		return macro {
 			if (false == ($expression)) {
-				hxassert.Assert.throwError(
-					@:pos(expression.pos)
-					new AssertionFailureError(${eFormatArray})
-				);
+				@:pos(expression.pos)
+				hxassert.Assert.throwAssertionFailureError(${eFormatArray});
 			}
 		}
 	}
