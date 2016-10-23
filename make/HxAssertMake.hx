@@ -1,5 +1,6 @@
 package ;
 
+import hxmake.dox.DoxTask;
 import hxmake.haxelib.HaxelibExt;
 import hxmake.test.TestTask;
 import hxmake.idea.IdeaPlugin;
@@ -37,5 +38,11 @@ class HxAssertMake extends hxmake.Module {
 		tt.targets = ["neko", "swf", "js", "node", "cpp", "java", "cs"];
 		tt.libraries = ["hxassert"];
 		task("test", tt);
+
+		var dox = new DoxTask();
+		dox.classPath = ["src"];
+		dox.topLevelPackage = "hxassert";
+		dox.output = '../../eliasku.github.io/$name/api-minimal';
+		task("dox", dox);
 	}
 }
