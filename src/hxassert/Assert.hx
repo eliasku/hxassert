@@ -51,7 +51,7 @@ class Assert {
 		Could be used for not performance critical code and released not fully tested modules
 		Suitable for contracting API, glue-code, unexpected state.
 	**/
-	macro public static function require(expression:Expr, arguments:Array<Expr>):Expr {
+	macro public static function require(expression:ExprOf<Bool>, arguments:Array<Expr>):Expr {
 		return __isTrue(expression, arguments);
 	}
 
@@ -61,11 +61,11 @@ class Assert {
 		Suitable to check deep checkings, for example verify state each frame or check arrays content
 	**/
 	#if (debug || !hxassert_no_expect)
-	macro public static function expect(expression:Expr, arguments:Array<Expr>):Expr {
+	macro public static function expect(expression:ExprOf<Bool>, arguments:Array<Expr>):Expr {
 		return __isTrue(expression, arguments);
 	}
 	#else
-	macro public static function expect(expression, arguments:Array<Expr>) {
+	macro public static function expect(expression:ExprOf<Bool>, arguments:Array<Expr>) {
 		return macro null;
 	}
 	#end
@@ -77,11 +77,11 @@ class Assert {
 		Also suitable for debug mode state guards
 	**/
 	#if debug
-	macro public static function assert(expression:Expr, arguments:Array<Expr>):Expr {
+	macro public static function assert(expression:ExprOf<Bool>, arguments:Array<Expr>):Expr {
 		return __isTrue(expression, arguments);
 	}
 	#else
-	macro public static function assert(expression, arguments:Array<Expr>) {
+	macro public static function assert(expression:ExprOf<Bool>, arguments:Array<Expr>) {
 		return macro null;
 	}
 	#end
@@ -117,7 +117,7 @@ class Assert {
 	static var _handlers = [];
 
 	#if macro
-	static function __isTrue(expression:Expr, arguments:Array<Expr>):Expr {
+	static function __isTrue(expression:ExprOf<Bool>, arguments:Array<Expr>):Expr {
 		var formatStrings = [];
 		var formatPos = [];
 		var hasFormatters = false;
